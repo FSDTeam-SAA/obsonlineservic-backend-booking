@@ -1,0 +1,831 @@
+{
+  "info": {
+    "_postman_id": "obs-api-collection-v1",
+    "name": "OBS Online Service - Full REST API",
+    "description": "Comprehensive API collection for OBS Online Service (Frontend & Admin Dashboard).\n\nIncludes Authentication, User Management, Holiday Parks, Properties, Bookings, Offers, Reviews, Dashboard Analytics, Newsletter, and File Uploads.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Clara Oswald\",\n  \"email\": \"clara@tardis.org\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+31 6 12345678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login (User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.accessToken) {",
+                  "    pm.environment.set('accessToken', res.data.accessToken);",
+                  "    pm.environment.set('refreshToken', res.data.refreshToken);",
+                  "    console.log('User Access Token saved to environment');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.accessToken) {",
+                  "    pm.environment.set('adminToken', res.data.accessToken);",
+                  "    pm.environment.set('accessToken', res.data.accessToken);",
+                  "    pm.environment.set('refreshToken', res.data.refreshToken);",
+                  "    console.log('Admin Access Token saved to environment');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-access-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh-access-token"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password (Request OTP)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forget-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forget-password"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-code"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Change Password (Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Password123!\",\n  \"newPassword\": \"UpdatedPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Users & Profile",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Elena Marsh Updated\",\n  \"phone\": \"(307) 555-0133\",\n  \"bio\": \"Luxury retreat host and administrator\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "me"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] List All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user/all-users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "all-users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Holiday Parks",
+      "item": [
+        {
+          "name": "List Holiday Parks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.items && res.data.items.length > 0) {",
+                  "    pm.environment.set('holidayParkId', res.data.items[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks?page=1&limit=10&country=All",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "country", "value": "All" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Holiday Parks (Homepage)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks/featured",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks", "featured"]
+            }
+          }
+        },
+        {
+          "name": "Get Holiday Park by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks/{{holidayParkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks", "{{holidayParkId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Create Holiday Park",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nordic Pines Retreat\",\n  \"title\": \"Nordic Pines Retreat\",\n  \"badgeLocation\": \"VELUWE, NETHERLANDS\",\n  \"shortDescription\": \"A one-line summary shown on cards\",\n  \"fullDescription\": \"Describe the atmosphere, surroundings and experience...\",\n  \"startingPrice\": 129,\n  \"totalCapacity\": \"180 Guests\",\n  \"totalProperties\": 24,\n  \"availableProperties\": 24,\n  \"checkInTime\": \"15:00\",\n  \"checkOutTime\": \"11:00\",\n  \"receptionHours\": \"24 Hours\",\n  \"amenities\": [\"Swimming Pool\", \"Spa\", \"Restaurant\", \"Free Parking\", \"Free Wi-Fi\"],\n  \"location\": {\n    \"country\": \"Netherlands\",\n    \"city\": \"Utrecht\",\n    \"region\": \"Veluwe\",\n    \"postalCode\": \"3811 AB\"\n  },\n  \"coverImage\": \"https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=600\",\n  \"isFeatured\": true,\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Update Holiday Park",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4.95,\n  \"startingPrice\": 139\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks/{{holidayParkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks", "{{holidayParkId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Delete Holiday Park",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/holiday-parks/{{holidayParkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-parks", "{{holidayParkId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Properties (Holiday Homes)",
+      "item": [
+        {
+          "name": "List Properties (With Category Filters)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.items && res.data.items.length > 0) {",
+                  "    pm.environment.set('propertyId', res.data.items[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/properties?category=All Properties&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties"],
+              "query": [
+                { "key": "category", "value": "All Properties" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Popular Properties (Homepage Grid)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/properties/popular",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties", "popular"]
+            }
+          }
+        },
+        {
+          "name": "Get Property Details by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/properties/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties", "{{propertyId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Create Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Luxury Lake Villa\",\n  \"badge\": \"FEATURED LODGE\",\n  \"category\": \"Wellness Villas\",\n  \"pricePerNight\": 129,\n  \"guests\": 6,\n  \"beds\": 3,\n  \"baths\": 3.5,\n  \"size\": \"240 m²\",\n  \"petsAllowed\": true,\n  \"cleaningFee\": 80,\n  \"taxes\": 45,\n  \"description\": \"An architectural masterpiece perched on the pristine shores of Lake Weissensee...\",\n  \"gallery\": {\n    \"main\": \"https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200\",\n    \"side1\": \"https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=600\",\n    \"side2\": \"https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=600\",\n    \"side3\": \"https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=600\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/properties",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricePerNight\": 135,\n  \"isPopular\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/properties/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties", "{{propertyId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Delete Property",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/properties/{{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties", "{{propertyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Bookings",
+      "item": [
+        {
+          "name": "Create Booking (Public/Guest)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.bookingId) {",
+                  "    pm.environment.set('bookingId', res.data.bookingId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest\": \"Clara Oswald\",\n  \"email\": \"clara@tardis.org\",\n  \"phone\": \"+31 6 12345678\",\n  \"property\": \"{{propertyId}}\",\n  \"checkInDate\": \"2026-08-20T15:00:00.000Z\",\n  \"checkOutDate\": \"2026-08-27T11:00:00.000Z\",\n  \"guestsCount\": 4,\n  \"offerCode\": \"SUMMER2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Create Booking (Authenticated User)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest\": \"Clara Oswald\",\n  \"email\": \"user@example.com\",\n  \"property\": \"{{propertyId}}\",\n  \"checkInDate\": \"2026-09-10T15:00:00.000Z\",\n  \"checkOutDate\": \"2026-09-15T11:00:00.000Z\",\n  \"guestsCount\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/auth-booking",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "auth-booking"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] List Bookings (With Search & Status Filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings?status=All&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings"],
+              "query": [
+                { "key": "status", "value": "All" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings (User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/my-bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "my-bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking by ID or Code (OBS-1024)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Update Booking Status (Confirmed/Pending)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Confirmed\",\n  \"paymentStatus\": \"Paid\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "{{bookingId}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Offers & Promotions",
+      "item": [
+        {
+          "name": "List Offers (Admin & Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.data && res.data.items && res.data.items.length > 0) {",
+                  "    pm.environment.set('offerId', res.data.items[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/offers?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Live Active Offers (Running this season)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/offers/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers", "active"]
+            }
+          }
+        },
+        {
+          "name": "Validate Promo Code & Calculate Discount",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SUMMER2026\",\n  \"bookingAmount\": 645,\n  \"holidayParkId\": \"{{holidayParkId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/offers/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Get Offer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/offers/{{offerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers", "{{offerId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Create Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerName\": \"Early Summer Escape\",\n  \"offerCode\": \"SUMMER2026\",\n  \"offerType\": \"percentage\",\n  \"discountValue\": \"15%\",\n  \"discountPercentage\": 15,\n  \"minBookingAmount\": 250,\n  \"maxDiscount\": 100,\n  \"description\": \"Save 15% on early summer bookings\",\n  \"scope\": \"entire_platform\",\n  \"validFrom\": \"2026-06-01T00:00:00.000Z\",\n  \"validUntil\": \"2026-08-31T23:59:59.000Z\",\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/offers",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Update Offer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountPercentage\": 20,\n  \"discountValue\": \"20%\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/offers/{{offerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers", "{{offerId}}"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] Delete Offer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/offers/{{offerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["offers", "{{offerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Reviews",
+      "item": [
+        {
+          "name": "List Reviews for Property",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reviews?property={{propertyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"],
+              "query": [
+                { "key": "property", "value": "{{propertyId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Guest Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property\": \"{{propertyId}}\",\n  \"name\": \"Marvin McKinney\",\n  \"country\": \"Netherlands\",\n  \"rating\": 5,\n  \"comment\": \"An absolutely premium experience! Everything from the modern minimalist architecture to the quality of the bedding was perfect.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Overview (Stats, Revenue, Active Offers)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "overview"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Newsletter",
+      "item": [
+        {
+          "name": "Subscribe to Newsletter",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"subscriber@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/newsletter/subscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["newsletter", "subscribe"]
+            }
+          }
+        },
+        {
+          "name": "[Admin] List Newsletter Subscribers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/newsletter",
+              "host": ["{{baseUrl}}"],
+              "path": ["newsletter"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. File Uploads",
+      "item": [
+        {
+          "name": "Upload Single Image",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["upload", "image"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
