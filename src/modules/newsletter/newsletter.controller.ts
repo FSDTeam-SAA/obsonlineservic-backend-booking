@@ -2,12 +2,14 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
+  Param,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { NewsletterService } from './newsletter.service';
 import { SubscribeNewsletterDto } from './dto/subscribe-newsletter.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -38,5 +40,17 @@ export class NewsletterController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Subscribers list fetched' })
   findAll() {
     return this.newsletterService.findAll();
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '[Admin] Remove a newsletter subscriber' })
+  @ApiParam({ name: 'id', description: 'Subscriber Mongo ObjectId' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Subscriber deleted successfully' })
+  remove(@Param('id') id: string) {
+    return this.newsletterService.remove(id);
   }
 }

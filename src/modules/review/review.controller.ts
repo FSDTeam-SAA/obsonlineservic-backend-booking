@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -18,7 +19,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { ReviewService } from './review.service';
-import { CreateReviewDto, QueryReviewDto } from './dto/create-review.dto';
+import { CreateReviewDto, QueryReviewDto, UpdateReviewDto } from './dto/create-review.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -59,6 +60,17 @@ export class ReviewController {
     @Body() dto: CreateReviewDto,
   ) {
     return this.reviewService.create(dto, userId);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '[Admin] Update / Edit a review' })
+  @ApiParam({ name: 'id', description: 'Review ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Review updated successfully' })
+  update(@Param('id') id: string, @Body() dto: UpdateReviewDto) {
+    return this.reviewService.update(id, dto);
   }
 
   @Delete(':id')

@@ -64,18 +64,25 @@ export class PropertyService {
     } = query;
 
     const filter: FilterQuery<PropertyDocument> = {};
+    const andConditions: FilterQuery<PropertyDocument>[] = [];
 
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { location: { $regex: search, $options: 'i' } },
-        { holidayParkName: { $regex: search, $options: 'i' } },
-        { badge: { $regex: search, $options: 'i' } },
-      ];
+    if (search && search.trim()) {
+      const trimmedSearch = search.trim();
+      andConditions.push({
+        $or: [
+          { title: { $regex: trimmedSearch, $options: 'i' } },
+          { location: { $regex: trimmedSearch, $options: 'i' } },
+          { holidayParkName: { $regex: trimmedSearch, $options: 'i' } },
+          { badge: { $regex: trimmedSearch, $options: 'i' } },
+          { country: { $regex: trimmedSearch, $options: 'i' } },
+          { category: { $regex: trimmedSearch, $options: 'i' } },
+          { description: { $regex: trimmedSearch, $options: 'i' } },
+        ],
+      });
     }
 
-    if (category && (category as any) !== 'All Properties' && (category as any) !== 'All') {
-      filter.category = category;
+    if (category && category !== 'All Properties' && category !== 'All') {
+      andConditions.push({ category: { $regex: category, $options: 'i' } });
     }
 
     if (holidayPark) {
@@ -83,10 +90,16 @@ export class PropertyService {
     }
 
     if (country && country !== 'All' && country !== 'All Countries') {
-      filter.$or = [
-        { country: { $regex: country, $options: 'i' } },
-        { location: { $regex: country, $options: 'i' } },
-      ];
+      andConditions.push({
+        $or: [
+          { country: { $regex: country, $options: 'i' } },
+          { location: { $regex: country, $options: 'i' } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
     }
 
     if (guests) {

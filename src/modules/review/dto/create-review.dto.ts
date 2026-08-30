@@ -1,6 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsInt,
   IsMongoId,
   IsNotEmpty,
@@ -48,6 +49,13 @@ export class CreateReviewDto {
   @IsString()
   @IsNotEmpty()
   comment: string;
+}
+
+export class UpdateReviewDto extends PartialType(CreateReviewDto) {
+  @ApiPropertyOptional({ example: true })
+  @IsBoolean()
+  @IsOptional()
+  isPublished?: boolean;
 }
 
 export class QueryReviewDto {

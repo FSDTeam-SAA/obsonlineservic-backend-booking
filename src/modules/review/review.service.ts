@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Review, ReviewDocument } from './schemas/review.schema';
-import { CreateReviewDto, QueryReviewDto } from './dto/create-review.dto';
+import { CreateReviewDto, QueryReviewDto, UpdateReviewDto } from './dto/create-review.dto';
 import { paginate } from '../../common/utils/pagination.util';
 
 @Injectable()
@@ -55,6 +55,22 @@ export class ReviewService {
         totalPages: Math.ceil(total / take) || 1,
       },
     };
+  }
+
+  async update(id: string, dto: UpdateReviewDto): Promise<Review> {
+    const payload: any = { ...dto };
+    if (dto.property) payload.property = new Types.ObjectId(dto.property);
+    if (dto.holidayPark) payload.holidayPark = new Types.ObjectId(dto.holidayPark);
+
+    const updated = await this.reviewModel
+      .findByIdAndUpdate(id, { $set: payload }, { new: true })
+      .exec();
+
+    if (!updated) {
+      throw new NotFoundException(`Review with ID "${id}" not found`);
+    }
+
+    return updated;
   }
 
   async remove(id: string): Promise<{ message: string }> {

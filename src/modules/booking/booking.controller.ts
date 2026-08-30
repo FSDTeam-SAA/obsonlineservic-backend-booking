@@ -103,4 +103,16 @@ export class BookingController {
   cancel(@Param('id') id: string) {
     return this.bookingService.cancelBooking(id);
   }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
+  @ApiBearerAuth('access-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '[Admin] Permanently delete a booking by ID or OBS code' })
+  @ApiParam({ name: 'id', description: 'Booking Mongo ID or OBS code' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Booking deleted successfully' })
+  remove(@Param('id') id: string) {
+    return this.bookingService.remove(id);
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Newsletter, NewsletterDocument } from './schemas/newsletter.schema';
@@ -28,5 +28,13 @@ export class NewsletterService {
 
   async findAll() {
     return this.newsletterModel.find().sort({ createdAt: -1 }).exec();
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const subscriber = await this.newsletterModel.findByIdAndDelete(id).exec();
+    if (!subscriber) {
+      throw new NotFoundException('Newsletter subscriber not found');
+    }
+    return { message: 'Subscriber removed successfully' };
   }
 }

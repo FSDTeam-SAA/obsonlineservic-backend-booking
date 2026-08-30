@@ -32,10 +32,10 @@ export class QueryPropertyDto {
   @IsOptional()
   search?: string;
 
-  @ApiPropertyOptional({ enum: PropertyCategory })
-  @IsEnum(PropertyCategory)
+  @ApiPropertyOptional({ example: 'Lakefront' })
+  @IsString()
   @IsOptional()
-  category?: PropertyCategory;
+  category?: string;
 
   @ApiPropertyOptional({ example: '67bd3ab41234567890abcdef' })
   @IsMongoId()

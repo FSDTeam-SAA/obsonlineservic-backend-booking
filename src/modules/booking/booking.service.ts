@@ -237,6 +237,15 @@ export class BookingService {
     return cancelled;
   }
 
+  async remove(id: string): Promise<{ message: string }> {
+    const filter = Types.ObjectId.isValid(id) ? { _id: id } : { bookingId: id };
+    const deleted = await this.bookingModel.findOneAndDelete(filter).exec();
+    if (!deleted) {
+      throw new NotFoundException(`Booking "${id}" not found`);
+    }
+    return { message: 'Booking deleted successfully' };
+  }
+
   async getMetrics() {
     const [totalBookings, pendingBookings, confirmedBookings, allBookings] = await Promise.all([
       this.bookingModel.countDocuments().exec(),
