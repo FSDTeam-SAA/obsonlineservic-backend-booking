@@ -23,46 +23,46 @@ export class DashboardService {
         this.offerService.findActive(),
       ]);
 
-    const formattedRevenue = `£${(bookingMetrics.totalRevenue || 84590).toLocaleString()}`;
+    const formattedRevenue = `€${(bookingMetrics.totalRevenue || 0).toLocaleString()}`;
 
     // 12-month performance bar chart distribution
-    const performanceBars = [42, 58, 47, 72, 63, 88, 76, 94, 68, 82, 59, 74];
+    const performanceBars = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     return {
       stats: [
         {
           title: 'Holiday Parks',
-          value: parksCount || 18,
-          note: 'Across 6 UK regions',
+          value: parksCount || 0,
+          note: 'Active holiday parks',
           key: 'parks',
         },
         {
           title: 'Properties',
-          value: propertiesCount || 246,
+          value: propertiesCount || 0,
           note: 'Live and bookable',
           key: 'properties',
         },
         {
           title: 'Active Offers',
-          value: activeOffersCount || 9,
-          note: 'Running this season',
+          value: activeOffersCount || 0,
+          note: 'Active promotions',
           key: 'offers',
         },
         {
           title: 'Total Booking',
-          value: bookingMetrics.totalBookings || 2548,
-          note: 'This month booking',
+          value: bookingMetrics.totalBookings || 0,
+          note: 'Total reservations',
           key: 'bookings',
         },
       ],
       bookingsSummary: {
-        totalBookings: bookingMetrics.totalBookings || 1284,
-        totalBookingsGrowth: '+8.4% from last month',
-        pendingBookings: bookingMetrics.pendingBookings || 12,
+        totalBookings: bookingMetrics.totalBookings || 0,
+        totalBookingsGrowth: 'Live data',
+        pendingBookings: bookingMetrics.pendingBookings || 0,
         pendingNote: 'Requires approval',
         totalRevenue: formattedRevenue,
-        revenueGrowth: '+14.2% increase',
-        activeGuests: bookingMetrics.activeGuests || 342,
+        revenueGrowth: 'Calculated earnings',
+        activeGuests: bookingMetrics.activeGuests || 0,
         activeGuestsNote: 'Currently checked-in',
       },
       performanceOverview: {

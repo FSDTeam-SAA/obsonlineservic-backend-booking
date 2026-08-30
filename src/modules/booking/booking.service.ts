@@ -268,7 +268,7 @@ export class BookingService {
       pendingBookings,
       confirmedBookings,
       totalRevenue: Number(totalRevenue.toFixed(2)),
-      activeGuests: activeGuests || 342,
+      activeGuests: activeGuests,
     };
   }
 }
