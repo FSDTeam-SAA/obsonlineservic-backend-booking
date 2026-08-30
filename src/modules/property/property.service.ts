@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { Property, PropertyDocument } from './schemas/property.schema';
+import { HolidayPark, HolidayParkDocument } from '../holiday-park/schemas/holiday-park.schema';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { QueryPropertyDto } from './dto/query-property.dto';
@@ -12,15 +13,37 @@ export class PropertyService {
   constructor(
     @InjectModel(Property.name)
     private readonly propertyModel: Model<PropertyDocument>,
+    @InjectModel(HolidayPark.name)
+    private readonly holidayParkModel: Model<HolidayParkDocument>,
   ) {}
 
   async create(dto: CreatePropertyDto): Promise<Property> {
     const payload: any = { ...dto };
     if (dto.holidayPark) {
       payload.holidayPark = new Types.ObjectId(dto.holidayPark);
+      const park = await this.holidayParkModel.findById(dto.holidayPark).exec();
+      if (park) {
+        payload.holidayParkName = park.name || park.title;
+        // Inherit geographic address from parent Holiday Park
+        if (park.location) {
+          payload.country = park.location.country || payload.country;
+          const locParts = [park.location.city, park.location.region, park.location.country].filter(Boolean);
+          payload.location = locParts.join(', ') || park.badgeLocation || payload.location;
+        } else if (park.badgeLocation) {
+          payload.location = park.badgeLocation;
+        }
+      }
     }
     const prop = new this.propertyModel(payload);
-    return prop.save();
+    const saved = await prop.save();
+
+    // Update parent park's property counts
+    if (dto.holidayPark) {
+      const count = await this.propertyModel.countDocuments({ holidayPark: new Types.ObjectId(dto.holidayPark) }).exec();
+      await this.holidayParkModel.findByIdAndUpdate(dto.holidayPark, { $set: { totalProperties: count } }).exec();
+    }
+
+    return saved;
   }
 
   async findAll(query: QueryPropertyDto) {
@@ -141,6 +164,17 @@ export class PropertyService {
     const payload: any = { ...dto };
     if (dto.holidayPark) {
       payload.holidayPark = new Types.ObjectId(dto.holidayPark);
+      const park = await this.holidayParkModel.findById(dto.holidayPark).exec();
+      if (park) {
+        payload.holidayParkName = park.name || park.title;
+        if (park.location) {
+          payload.country = park.location.country || payload.country;
+          const locParts = [park.location.city, park.location.region, park.location.country].filter(Boolean);
+          payload.location = locParts.join(', ') || park.badgeLocation || payload.location;
+        } else if (park.badgeLocation) {
+          payload.location = park.badgeLocation;
+        }
+      }
     }
 
     const updated = await this.propertyModel
@@ -150,6 +184,12 @@ export class PropertyService {
     if (!updated) {
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
+
+    if (updated.holidayPark) {
+      const count = await this.propertyModel.countDocuments({ holidayPark: updated.holidayPark }).exec();
+      await this.holidayParkModel.findByIdAndUpdate(updated.holidayPark, { $set: { totalProperties: count } }).exec();
+    }
+
     return updated;
   }
 
@@ -158,6 +198,12 @@ export class PropertyService {
     if (!deleted) {
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
+
+    if (deleted.holidayPark) {
+      const count = await this.propertyModel.countDocuments({ holidayPark: deleted.holidayPark }).exec();
+      await this.holidayParkModel.findByIdAndUpdate(deleted.holidayPark, { $set: { totalProperties: count } }).exec();
+    }
+
     return { message: `Property "${deleted.title}" deleted successfully` };
   }
 

@@ -50,6 +50,15 @@ export class HolidayParkController {
   }
 
   @Public()
+  @Get(':id/properties')
+  @ApiOperation({ summary: 'Get properties belonging to a specific holiday park' })
+  @ApiParam({ name: 'id', description: 'Holiday Park ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Properties list for holiday park' })
+  findPropertiesForPark(@Param('id') id: string, @Query() query: any) {
+    return this.holidayParkService.findPropertiesForPark(id, query);
+  }
+
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get single holiday park details by ID' })
   @ApiParam({ name: 'id', description: 'Holiday Park ID' })

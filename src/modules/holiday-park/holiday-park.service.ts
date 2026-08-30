@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { HolidayPark, HolidayParkDocument } from './schemas/holiday-park.schema';
+import { Property, PropertyDocument } from '../property/schemas/property.schema';
 import { CreateHolidayParkDto } from './dto/create-holiday-park.dto';
 import { UpdateHolidayParkDto } from './dto/update-holiday-park.dto';
 import { QueryHolidayParkDto } from './dto/query-holiday-park.dto';
+import { QueryPropertyDto } from '../property/dto/query-property.dto';
 import { paginate } from '../../common/utils/pagination.util';
 
 @Injectable()
@@ -12,6 +14,8 @@ export class HolidayParkService {
   constructor(
     @InjectModel(HolidayPark.name)
     private readonly holidayParkModel: Model<HolidayParkDocument>,
+    @InjectModel(Property.name)
+    private readonly propertyModel: Model<PropertyDocument>,
   ) {}
 
   async create(dto: CreateHolidayParkDto): Promise<HolidayPark> {
@@ -100,7 +104,58 @@ export class HolidayParkService {
     if (!deleted) {
       throw new NotFoundException(`Holiday park with ID "${id}" not found`);
     }
-    return { message: `Holiday park "${deleted.name}" deleted successfully` };
+    // Cascade delete child properties
+    await this.propertyModel.deleteMany({ holidayPark: new Types.ObjectId(id) }).exec();
+
+    return { message: `Holiday park "${deleted.name}" and associated properties deleted successfully` };
+  }
+
+  async findPropertiesForPark(parkId: string, query: QueryPropertyDto) {
+    const park = await this.findById(parkId);
+    const { page = 1, limit = 10, search, category, status } = query;
+
+    const filter: FilterQuery<PropertyDocument> = {
+      holidayPark: new Types.ObjectId(parkId),
+    };
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { badge: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (category && (category as any) !== 'All Properties' && (category as any) !== 'All') {
+      filter.category = category;
+    }
+
+    if (status && (status as any) !== 'All') {
+      filter.status = status;
+    }
+
+    const { skip, take } = paginate(page, limit);
+
+    const [items, total] = await Promise.all([
+      this.propertyModel
+        .find(filter)
+        .populate('holidayPark', 'name title badgeLocation rating startingPrice location')
+        .sort({ isPopular: -1, rating: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(take)
+        .exec(),
+      this.propertyModel.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      park,
+      items,
+      meta: {
+        page,
+        limit: take,
+        total,
+        totalPages: Math.ceil(total / take) || 1,
+      },
+    };
   }
 
   async countTotal(): Promise<number> {
