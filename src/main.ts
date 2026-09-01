@@ -33,7 +33,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1');
 
   app.enableCors({
-    origin: ['*', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: [
+      '*',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://obs-website-booking.vercel.app',
+      'https://obs-dashboard-booking.vercel.app',
+    ],
     credentials: true,
   });
 
