@@ -21,6 +21,11 @@ export enum OfferStatus {
   INACTIVE = 'Inactive',
 }
 
+export enum OfferPlacement {
+  FEATURED = 'featured',
+  SPECIAL_PACKAGES = 'special_packages',
+}
+
 @Schema({ timestamps: true })
 export class Offer {
   @Prop({ required: true, trim: true })
@@ -61,6 +66,9 @@ export class Offer {
 
   @Prop({ type: String, enum: Object.values(OfferScope), default: OfferScope.ENTIRE_PLATFORM })
   scope: OfferScope;
+
+  @Prop({ type: String, enum: Object.values(OfferPlacement), default: OfferPlacement.FEATURED })
+  displayPlacement: OfferPlacement;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'HolidayPark' }], default: [] })
   applicableParks: Types.ObjectId[];

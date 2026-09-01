@@ -24,13 +24,19 @@ export class PropertyService {
       const park = await this.holidayParkModel.findById(dto.holidayPark).exec();
       if (park) {
         payload.holidayParkName = park.name || park.title;
-        // Inherit geographic address from parent Holiday Park
-        if (park.location) {
-          payload.country = park.location.country || payload.country;
+        if (park.badgeLocation) {
+          const parts = park.badgeLocation.split(',').map((s) => s.trim()).filter(Boolean);
+          if (parts.length > 0) {
+            payload.country = parts[parts.length - 1];
+            payload.location = park.badgeLocation;
+          }
+        }
+        if (park.location?.country) {
+          payload.country = park.location.country;
           const locParts = [park.location.city, park.location.region, park.location.country].filter(Boolean);
-          payload.location = locParts.join(', ') || park.badgeLocation || payload.location;
-        } else if (park.badgeLocation) {
-          payload.location = park.badgeLocation;
+          if (locParts.length > 0) {
+            payload.location = locParts.join(', ');
+          }
         }
       }
     }
@@ -90,12 +96,32 @@ export class PropertyService {
     }
 
     if (country && country !== 'All' && country !== 'All Countries') {
-      andConditions.push({
-        $or: [
-          { country: { $regex: country, $options: 'i' } },
-          { location: { $regex: country, $options: 'i' } },
-        ],
-      });
+      const matchingParks = await this.holidayParkModel
+        .find({
+          $or: [
+            { 'location.country': { $regex: country, $options: 'i' } },
+            { badgeLocation: { $regex: country, $options: 'i' } },
+            { name: { $regex: country, $options: 'i' } },
+            { title: { $regex: country, $options: 'i' } },
+          ],
+        })
+        .select('_id')
+        .exec();
+
+      const parkIds = matchingParks.map((p) => p._id);
+
+      const countryOrConditions: FilterQuery<PropertyDocument>[] = [
+        { country: { $regex: country, $options: 'i' } },
+        { location: { $regex: country, $options: 'i' } },
+        { holidayParkName: { $regex: country, $options: 'i' } },
+        { title: { $regex: country, $options: 'i' } },
+      ];
+
+      if (parkIds.length > 0) {
+        countryOrConditions.push({ holidayPark: { $in: parkIds } });
+      }
+
+      andConditions.push({ $or: countryOrConditions });
     }
 
     if (andConditions.length > 0) {
@@ -174,20 +200,37 @@ export class PropertyService {
   }
 
   async update(id: string, dto: UpdatePropertyDto): Promise<Property> {
+    const existing = await this.propertyModel.findById(id).exec();
+    if (!existing) {
+      throw new NotFoundException(`Property with ID "${id}" not found`);
+    }
+
+    const previousParkId = existing.holidayPark ? existing.holidayPark.toString() : null;
+
     const payload: any = { ...dto };
     if (dto.holidayPark) {
       payload.holidayPark = new Types.ObjectId(dto.holidayPark);
       const park = await this.holidayParkModel.findById(dto.holidayPark).exec();
       if (park) {
         payload.holidayParkName = park.name || park.title;
-        if (park.location) {
-          payload.country = park.location.country || payload.country;
+        if (park.badgeLocation) {
+          const parts = park.badgeLocation.split(',').map((s) => s.trim()).filter(Boolean);
+          if (parts.length > 0) {
+            payload.country = parts[parts.length - 1];
+            payload.location = park.badgeLocation;
+          }
+        }
+        if (park.location?.country) {
+          payload.country = park.location.country;
           const locParts = [park.location.city, park.location.region, park.location.country].filter(Boolean);
-          payload.location = locParts.join(', ') || park.badgeLocation || payload.location;
-        } else if (park.badgeLocation) {
-          payload.location = park.badgeLocation;
+          if (locParts.length > 0) {
+            payload.location = locParts.join(', ');
+          }
         }
       }
+    } else if (dto.holidayPark === null || (dto as any).holidayPark === '') {
+      payload.holidayPark = null;
+      payload.holidayParkName = '';
     }
 
     const updated = await this.propertyModel
@@ -198,9 +241,17 @@ export class PropertyService {
       throw new NotFoundException(`Property with ID "${id}" not found`);
     }
 
+    // Recalculate count for current park if assigned
     if (updated.holidayPark) {
       const count = await this.propertyModel.countDocuments({ holidayPark: updated.holidayPark }).exec();
       await this.holidayParkModel.findByIdAndUpdate(updated.holidayPark, { $set: { totalProperties: count } }).exec();
+    }
+
+    // Recalculate count for previous park if it changed
+    const newParkId = updated.holidayPark ? updated.holidayPark.toString() : null;
+    if (previousParkId && previousParkId !== newParkId) {
+      const prevCount = await this.propertyModel.countDocuments({ holidayPark: new Types.ObjectId(previousParkId) }).exec();
+      await this.holidayParkModel.findByIdAndUpdate(previousParkId, { $set: { totalProperties: prevCount } }).exec();
     }
 
     return updated;

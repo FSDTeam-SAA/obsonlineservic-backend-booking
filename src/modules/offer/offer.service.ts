@@ -35,7 +35,7 @@ export class OfferService {
   }
 
   async findAll(query: QueryOfferDto) {
-    const { page = 1, limit = 10, search, offerType, scope, status } = query;
+    const { page = 1, limit = 10, search, offerType, scope, status, displayPlacement } = query;
     const filter: FilterQuery<OfferDocument> = {};
 
     if (search) {
@@ -55,6 +55,10 @@ export class OfferService {
       filter.scope = scope;
     }
 
+    if (displayPlacement) {
+      filter.displayPlacement = displayPlacement;
+    }
+
     if (status && (status as any) !== 'All') {
       filter.status = status;
     }
@@ -64,8 +68,8 @@ export class OfferService {
     const [items, total] = await Promise.all([
       this.offerModel
         .find(filter)
-        .populate('applicableParks', 'name title')
-        .populate('applicableProperties', 'title pricePerNight')
+        .populate('applicableParks', 'name title location coverImage')
+        .populate('applicableProperties', 'title description pricePerNight gallery category amenities')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(take)
@@ -92,8 +96,10 @@ export class OfferService {
         validFrom: { $lte: now },
         validUntil: { $gte: now },
       })
+      .populate('applicableParks', 'name title location coverImage startingPrice')
+      .populate('applicableProperties', 'title description pricePerNight gallery category amenities location country')
       .sort({ createdAt: -1 })
-      .limit(6)
+      .limit(12)
       .exec();
   }
 

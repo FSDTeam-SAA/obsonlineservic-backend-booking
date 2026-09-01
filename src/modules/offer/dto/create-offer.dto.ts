@@ -9,7 +9,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { OfferScope, OfferStatus, OfferType } from '../schemas/offer.schema';
+import { OfferPlacement, OfferScope, OfferStatus, OfferType } from '../schemas/offer.schema';
 
 export class CreateOfferDto {
   @ApiProperty({ example: 'Early Summer Escape' })
@@ -71,6 +71,11 @@ export class CreateOfferDto {
   @IsEnum(OfferScope)
   @IsOptional()
   scope?: OfferScope;
+
+  @ApiPropertyOptional({ enum: OfferPlacement, default: OfferPlacement.FEATURED })
+  @IsEnum(OfferPlacement)
+  @IsOptional()
+  displayPlacement?: OfferPlacement;
 
   @ApiPropertyOptional({ type: [String], example: ['67bd3ab41234567890abcdef'] })
   @IsArray()

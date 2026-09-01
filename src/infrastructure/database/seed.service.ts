@@ -5,7 +5,7 @@ import { User, UserDocument } from '../../modules/auth/schemas/user.schema';
 import { RoleType } from '../../common/enums/role.enum';
 import { HolidayPark, HolidayParkDocument, ParkStatus } from '../../modules/holiday-park/schemas/holiday-park.schema';
 import { Property, PropertyDocument, PropertyCategory, PropertyStatus } from '../../modules/property/schemas/property.schema';
-import { Offer, OfferDocument, OfferScope, OfferStatus, OfferType } from '../../modules/offer/schemas/offer.schema';
+import { Offer, OfferDocument, OfferPlacement, OfferScope, OfferStatus, OfferType } from '../../modules/offer/schemas/offer.schema';
 import { Booking, BookingDocument, BookingStatus, PaymentStatus } from '../../modules/booking/schemas/booking.schema';
 import { Review, ReviewDocument } from '../../modules/review/schemas/review.schema';
 
@@ -577,6 +577,7 @@ export class SeedService {
         maxDiscount: 150,
         maxUses: 1000,
         scope: OfferScope.ENTIRE_PLATFORM,
+        displayPlacement: OfferPlacement.FEATURED,
         applicableParkNames: ['All Holiday Parks'],
         validFrom: new Date('2026-06-01T00:00:00.000Z'),
         validUntil: new Date('2026-08-31T23:59:59.000Z'),
@@ -592,6 +593,7 @@ export class SeedService {
         minBookingAmount: 200,
         maxDiscount: 120,
         scope: OfferScope.ENTIRE_PLATFORM,
+        displayPlacement: OfferPlacement.FEATURED,
         applicableParkNames: ['All Holiday Parks'],
         validFrom: new Date('2026-09-01T00:00:00.000Z'),
         validUntil: new Date('2026-09-30T23:59:59.000Z'),
@@ -606,6 +608,7 @@ export class SeedService {
         description: 'Book your 2027 retreat early and secure an exclusive 10% discount.',
         minBookingAmount: 300,
         scope: OfferScope.HOLIDAY_PARKS,
+        displayPlacement: OfferPlacement.SPECIAL_PACKAGES,
         applicableParks: parks.slice(0, 2).map((p) => p._id),
         applicableParkNames: ['Silverlake Retreat', 'Veluwe Forest Resort'],
         validFrom: new Date('2026-11-15T00:00:00.000Z'),
@@ -621,6 +624,7 @@ export class SeedService {
         description: 'Direct £75 voucher on family bookings with 4 or more guests.',
         minBookingAmount: 400,
         scope: OfferScope.HOLIDAY_PARKS,
+        displayPlacement: OfferPlacement.SPECIAL_PACKAGES,
         applicableParks: parks.slice(2, 4).map((p) => p._id),
         applicableParkNames: ['Mountain View Resort'],
         validFrom: new Date('2026-07-01T00:00:00.000Z'),
@@ -637,6 +641,7 @@ export class SeedService {
         minBookingAmount: 350,
         maxDiscount: 200,
         scope: OfferScope.ENTIRE_PLATFORM,
+        displayPlacement: OfferPlacement.SPECIAL_PACKAGES,
         applicableParkNames: ['Selected Holiday Park'],
         validFrom: new Date('2026-12-01T00:00:00.000Z'),
         validUntil: new Date('2027-02-28T23:59:59.000Z'),

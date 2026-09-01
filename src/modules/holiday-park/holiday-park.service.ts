@@ -38,7 +38,14 @@ export class HolidayParkService {
     }
 
     if (country && country !== 'All' && country !== 'All Countries') {
-      filter['location.country'] = { $regex: country, $options: 'i' };
+      filter.$or = [
+        { 'location.country': { $regex: country, $options: 'i' } },
+        { badgeLocation: { $regex: country, $options: 'i' } },
+        { name: { $regex: country, $options: 'i' } },
+        { title: { $regex: country, $options: 'i' } },
+        { 'location.region': { $regex: country, $options: 'i' } },
+        { 'location.city': { $regex: country, $options: 'i' } },
+      ];
     }
 
     if (status && (status as any) !== 'All') {
