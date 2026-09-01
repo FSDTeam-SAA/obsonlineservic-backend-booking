@@ -37,7 +37,7 @@ async function bootstrap() {
       '*',
       'http://localhost:3000',
       'http://localhost:3001',
-      'http://obs-website-booking.vercel.app',
+      'https://obs-website-booking.vercel.app',
       'https://obs-dashboard-booking.vercel.app',
     ],
     credentials: true,
